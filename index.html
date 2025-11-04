@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⚙️ CodeConnect  Student Coding Q&A Hub</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #f3f6fa;
+      color: #333;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #sidebar {
+      width: 220px;
+      background: #1f2937;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+    #userInfo {
+     .user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.user-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+    }
+    .unit {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #4b5563;
+    }
+    .unit.active {
+      background: #10b981;
+    }
+    #addUnitBtn {
+      background: #3b82f6;
+      border: none;
+      color: white;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: auto;
+    }
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      overflow-y: hidden;
+    }
+    #unitTitle {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    #posts {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .post-card {
+      background: white;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    pre {
+      background: #f1f5f9;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+    .rating span {
+      font-size: 20px;
+      cursor: pointer;
+      color: gray;
+    }
+    .rating .filled {
+      color: gold;
+    }
+    .comment {
+      background: #f9fafb;
+      padding: 5px 10px;
+      border-radius: 6px;
+      margin-top: 5px;
+    }
+    #postInput {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px;
+      background: #f9fafb;
+      border-radius: 10px;
+    }
+    #question, #code {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #postBtn {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #searchBar {
+      margin-bottom: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    #searchInput {
+      flex: 1;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #logoutBtn, #loginBtn {
+      margin-top: 5px;
+      padding: 6px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+    }
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      #sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .unit {
+        flex-shrink: 0;
+      }
+      .code-block {
+  position: relative;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: 0.2s;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+  background: #059669;
+}
+
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <div id="userInfo"></div>
+    <button id="loginBtn">🔑 Login with Google</button>
+    <button id="logoutBtn" style="display:none;">🚪 Logout</button>
+    <h3>Forms</h3>
+    <div id="units"></div>
+    <button id="addUnitBtn">+ Add Unit</button>
+  </div>
+
+  <div id="main">
+    <div id="unitTitle">Select a Unit</div>
+    <div id="searchBar">
+      <input type="text" id="searchInput" placeholder="🔍 Search questions..." />
+    </div>
+    <div id="posts"></div>
+    <div id="postInput">
+      <textarea id="question" placeholder="Enter your question"></textarea>
+      <textarea id="code" placeholder="Enter your code here"></textarea>
+      <button id="postBtn">Post</button>
+
+    </div>
+  </div>
+
+  <script type="module">
+    const renderedPosts = new Set();
+    
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+  doc,
+  onSnapshot,
+  query,
+  orderBy,
+  setDoc,
+  getDoc,
+  where,
+  initializeFirestore,
+  persistentMultipleTabManager
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+
+
+    // ✅ Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDejh5-fbyyAlWmD8t1qeDuPpKkhHorTl4",
+      authDomain: "codeconnect-f6bab.firebaseapp.com",
+      projectId: "codeconnect-f6bab",
+      storageBucket: "codeconnect-f6bab.appspot.com",
+      messagingSenderId: "406795026329",
+      appId: "1:406795026329:web:ed828e51bac75c17ee9d08",
+      measurementId: "G-HCXN6VTP12"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const db = initializeFirestore(app, {
+  localCache: persistentMultipleTabManager()
+});
+
+
+
+// ✅ Function to check if a user is admin
+async function checkAdminStatus(email) {
+  const adminRef = doc(db, "admins", email);
+  const adminSnap = await getDoc(adminRef);
+  return adminSnap.exists() && adminSnap.data().isAdmin === true;
+}
+// ---------- Toggle code textarea visibility (safe) ----------
+function toggleCodeBox() {
+  const titleEl = document.getElementById("unitTitle");
+  const codeBox = document.getElementById("code");
+  if (!titleEl || !codeBox) return; // defensive check to avoid errors
+
+  const unitName = titleEl.textContent.trim().toLowerCase();
+  if (unitName === "queries") {
+    codeBox.style.display = "none";
+  } else {
+    codeBox.style.display = "block";
+  }
+}
+    // Elements
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const userInfo = document.getElementById("userInfo");
+    const unitsDiv = document.getElementById("units");
+    const postsDiv = document.getElementById("posts");
+    const addUnitBtn = document.getElementById("addUnitBtn");
+    const postBtn = document.getElementById("postBtn");
+    const qField = document.getElementById("question");
+    const cField = document.getElementById("code");
+    const unitTitle = document.getElementById("unitTitle");
+    const searchInput = document.getElementById("searchInput");
+
+    let currentUser = null;
+    let currentUnit = null;
+    
+
+    // 🔑 Auth
+    loginBtn.onclick = async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        currentUser = result.user;
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+    logoutBtn.onclick = async () => await signOut(auth);
+
+  onAuthStateChanged(auth, user => {
+  if (user) {
+    currentUser = user;
+
+    // Get first letter of user's display name
+    const firstLetter = user.displayName
+      ? user.displayName.charAt(0).toUpperCase()
+      : "?";
+
+    // Enhanced user info with logo
+    userInfo.innerHTML = `
+      <div class="user-profile">
+        <div class="user-logo">${firstLetter}</div>
+        <div>
+          <b>${user.displayName}</b><br>
+          <small>${user.email}</small>
+        </div>
+      </div>
+    `;
+    
+
+// Add this function anywhere near top
+async function checkAdminStatus(email) {
+  const adminRef = doc(db, "admins", email);
+  const adminSnap = await getDoc(adminRef);
+  return adminSnap.exists() && adminSnap.data().isAdmin === true;
+}
+
+// Inside onAuthStateChanged:
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const firstLetter = user.displayName
+      ? user.displayName.charAt(0).toUpperCase()
+      : "?";
+
+    const isAdmin = await checkAdminStatus(user.email);
+
+    userInfo.innerHTML = `
+      <div class="user-profile">
+        <div class="user-logo">${firstLetter}</div>
+        <div>
+          <b>${user.displayName}</b><br>
+          <small>${user.email}</small><br>
+          ${isAdmin ? "<span style='color:#10b981;font-weight:bold;'>Admin</span>" : ""}
+        </div>
+      </div>
+    `;
+
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "block";
+    loadUnits();
+    toggleCodeBox();
+    // ✅ Show or hide Add Unit button
+    addUnitBtn.style.display = isAdmin ? "block" : "none";
+  } else {
+    currentUser = null;
+    userInfo.innerHTML = "";
+    loginBtn.style.display = "block";
+    logoutBtn.style.display = "none";
+    postsDiv.innerHTML = "";
+    addUnitBtn.style.display = "none";
+  }
+});
+
+
+
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "block";
+    loadUnits();
+  } else {
+    currentUser = null;
+    userInfo.innerHTML = "";
+    loginBtn.style.display = "block";
+    logoutBtn.style.display = "none";
+    postsDiv.innerHTML = "";
+  }
+});
+
+ // Track already rendered post IDs
+
+    // 🧱 Load Units
+    // ✅ Load Units
+async function loadUnits() {
+  const snap = await getDocs(collection(db, "units"));
+  unitsDiv.innerHTML = "";
+  snap.forEach(docu => {
+    const u = docu.data();
+    const div = document.createElement("div");
+    div.className = "unit";
+    div.textContent = u.name;
+    div.onclick = (event) => selectUnit(docu.id, u.name, event);
+    unitsDiv.appendChild(div);
+  });
+}
+
+// ✅ Select Unit and load posts
+function selectUnit(id, name, event) {
+  currentUnit = { id, name };
+
+  // Remove highlight from all units
+  document.querySelectorAll(".unit").forEach(u => u.classList.remove("active"));
+  const clicked = event && event.target ? event.target.closest(".unit") : null;
+  if (clicked) clicked.classList.add("active");
+
+  // Update the title
+  unitTitle.textContent = name;
+
+  // ✅ Step 3: Clear old posts & reset tracking before loading new ones
+  postsDiv.innerHTML = "";
+  renderedPosts.clear();
+
+  // Hide code box if needed
+  toggleCodeBox();
+
+  // Start listening for posts in the selected unit
+  listenPosts();
+}
+
+// ✅ Get average rating for a post
+async function getAverageRating(postId) {
+  const ratingsRef = collection(db, "posts", postId, "ratings");
+  const snapshot = await getDocs(ratingsRef);
+
+  let total = 0;
+  snapshot.forEach(doc => (total += doc.data().rating));
+
+  const avg = snapshot.size > 0 ? total / snapshot.size : 0;
+  return avg.toFixed(1);
+}
+
+
+let unsubscribePosts = null;
+// ✅ Function to show each post nicely with rating + comments
+async function renderPost(id, p) {
+  // ✅ Avoid duplicate rendering
+  if (renderedPosts.has(id)) return;
+  renderedPosts.add(id);
+
+  const card = document.createElement("div");
+  card.className = "post-card";
+  card.id = `post-${id}`;
+
+  // 🟢 Skip fetching Firestore for temporary (local) posts
+  let avgRating = "0.0";
+  if (!id.startsWith("temp-")) {
+    const docSnap = await getDoc(doc(db, "posts", id));
+    const data = docSnap.exists() ? docSnap.data() : {};
+    const ratings = data.ratings || [];
+    avgRating = ratings.length
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+      : "0.0";
+  }
+
+  // 🧱 Build post
+  card.innerHTML = `
+    <h3>${p.question}</h3>
+    <pre>${p.code || ""}</pre>
+    <div><small>by ${p.userName || "Anonymous"} • ${new Date(
+      p.ts
+    ).toLocaleString()}</small></div>
+
+    <div class="rating" id="rating-${id}">
+      ${[1, 2, 3, 4, 5]
+        .map(
+          (n) =>
+            `<span data-star="${n}" ${
+              n <= Math.round(avgRating) ? 'style="color:gold"' : ""
+            }>⭐</span>`
+        )
+        .join("")}
+      <small id="avg-${id}">(${avgRating})</small>
+    </div>
+
+    <div class="comments">
+      ${(p.comments || [])
+        .map((c) => `<div class="comment"><b>${c.user}</b>: ${c.text}</div>`)
+        .join("")}
+      <input id="comment-${id}" placeholder="Add comment..." style="width:90%;margin-top:5px;">
+      <button id="send-${id}" style="padding:2px 6px;">💬</button>
+    </div>
+  `;
+
+  postsDiv.appendChild(card);
+
+  // ⭐ Handle Rating — disable for temp posts
+  if (!id.startsWith("temp-")) {
+    card.querySelectorAll(`#rating-${id} span`).forEach((star) => {
+      star.onclick = async (e) => {
+        if (!currentUser) return alert("Login first");
+        const rating = parseInt(e.target.dataset.star);
+
+        const userEmail = currentUser.email;
+        const docRef = doc(db, "posts", id);
+        const postSnap = await getDoc(docRef);
+        const postData = postSnap.data();
+
+        const userRatings = postData.userRatings || {};
+        if (userRatings[userEmail]) {
+          alert("You’ve already rated this post!");
+          return;
+        }
+
+        // ✅ Save new rating
+        userRatings[userEmail] = rating;
+        const allRatings = Object.values(userRatings);
+        const newAvg =
+          allRatings.reduce((a, b) => a + b, 0) / allRatings.length;
+
+        await updateDoc(docRef, {
+          ratings: allRatings,
+          userRatings,
+        });
+
+        // ✅ Update UI instantly
+        card.querySelector(`#avg-${id}`).innerText = `(${newAvg.toFixed(1)})`;
+        card.querySelectorAll(`#rating-${id} span`).forEach((s, i) => {
+          s.style.color = i < Math.round(newAvg) ? "gold" : "";
+        });
+      };
+    });
+  }
+
+  // 💬 Add Comment — skip for temp posts
+  if (!id.startsWith("temp-")) {
+    const input = card.querySelector(`#comment-${id}`);
+    const sendBtn = card.querySelector(`#send-${id}`);
+    sendBtn.onclick = async () => {
+      if (!currentUser) return alert("Login first");
+      const text = input.value.trim();
+      if (!text) return;
+
+      await updateDoc(doc(db, "posts", id), {
+        comments: arrayUnion({
+          user: currentUser.displayName,
+          text,
+          ts: Date.now(),
+        }),
+      });
+      input.value = "";
+    };
+  }
+}
+
+
+
+
+
+
+// ✅ Listen for posts in selected unit (chat-style, newest at bottom)
+function listenPosts() {
+  if (!currentUnit) return;
+
+  postsDiv.innerHTML = "";
+  renderedPosts.clear();
+
+  const q = query(
+    collection(db, "posts"),
+    where("unitId", "==", currentUnit.id),
+    orderBy("ts", "asc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      const docData = change.doc.data();
+      const docId = change.doc.id;
+
+      // 🧠 Skip if temporary (local UI post)
+      if (docData.isTemp) return;
+
+      if (change.type === "added") {
+        renderPost(docId, docData);
+        postsDiv.scrollTop = postsDiv.scrollHeight;
+      }
+    });
+  });
+}
+
+
+
+// ✅ Function to allow only one rating per user per post
+async function ratePost(postId, rating) {
+  const user = auth.currentUser;
+  if (!user) return alert("Login required to rate");
+
+  const ratingRef = doc(db, "posts", postId, "ratings", user.uid);
+  const ratingSnap = await getDoc(ratingRef);
+
+  if (ratingSnap.exists()) {
+    // 🌀 Update existing rating
+    await updateDoc(ratingRef, { rating });
+  } else {
+    // 🆕 Create new rating
+    await setDoc(ratingRef, {
+      userId: user.uid,
+      userEmail: user.email,
+      rating,
+      timestamp: new Date(),
+    });
+  }
+
+  alert("Rating saved!");
+}
+
+
+addUnitBtn.onclick = async () => {
+  if (!currentUser) return alert("Login first");
+
+  const isAdmin = await checkAdminStatus(currentUser.email);
+  if (!isAdmin) return alert("Only admins can add units");
+
+  const name = prompt("Enter new unit name:");
+  if (!name) return;
+  await addDoc(collection(db, "units"), { name });
+  loadUnits();
+};
+
+// ✅ Post a Question (instant display + backend sync)
+// ✅ Post a Question (instant display + backend sync)
+// ✅ Post a Question (instant display + backend sync)
+postBtn.onclick = async () => {
+  if (!currentUser) return alert("Login first");
+  if (!currentUnit) return alert("Select a unit first");
+
+  const q = qField.value.trim();
+  const c = cField.value.trim();
+  if (!q && !c) return alert("Enter a question or code");
+
+  const isAdmin = await checkAdminStatus(currentUser.email);
+
+  if (currentUnit.name.toLowerCase().includes("mentor") && !isAdmin) {
+    alert("Only admins can send messages in this unit.");
+    return;
+  }
+
+  if (currentUnit.name.toLowerCase().includes("queries") && c) {
+    alert("You can only post questions in this unit — code not allowed.");
+    return;
+  }
+
+  // 🟢 Create new post
+  const newPost = {
+    question: q,
+    code: c,
+    userName: currentUser.displayName,
+    userEmail: currentUser.email,
+    unitId: currentUnit.id,
+    ts: Date.now(),
+    comments: [],
+    ratings: [],
+  };
+
+  // 🟢 1. Show immediately in UI
+  const tempId = "temp-" + Date.now();
+  renderPost(tempId, newPost);
+  postsDiv.scrollTop = postsDiv.scrollHeight;
+
+  try {
+    // 🟢 2. Save to Firestore
+    const docRef = await addDoc(collection(db, "posts"), newPost);
+
+    // 🟢 3. Remove temp version after real post appears
+    const tempCard = document.getElementById(`post-${tempId}`);
+    if (tempCard) tempCard.remove();
+    renderedPosts.delete(tempId);
+  } catch (err) {
+    alert("Error posting: " + err.message);
+  }
+
+  // 🟢 4. Clear inputs
+  qField.value = "";
+  cField.value = "";
+};
+
+
+    // 🔍 Search
+let isSearching = false;
+
+searchInput.oninput = async () => {
+  const text = searchInput.value.toLowerCase().trim();
+
+  if (!currentUnit) {
+    alert("Select a unit first");
+    return;
+  }
+
+  // 🧹 If search bar is cleared, reload real-time listener
+  if (text === "") {
+    isSearching = false;
+    postsDiv.innerHTML = "";
+    renderedPosts.clear();
+    listenPosts(); // restore real-time view
+    return;
+  }
+
+  // 🚫 Pause live updates while searching
+  isSearching = true;
+  postsDiv.innerHTML = "";
+  renderedPosts.clear();
+
+  const qSnap = await getDocs(
+    query(
+      collection(db, "posts"),
+      where("unitId", "==", currentUnit.id),
+      orderBy("ts", "asc")
+    )
+  );
+
+  const results = [];
+  qSnap.forEach((docu) => {
+    const p = docu.data();
+    if (
+      (p.question && p.question.toLowerCase().includes(text)) ||
+      (p.userName && p.userName.toLowerCase().includes(text))
+    ) {
+      results.push({ id: docu.id, ...p });
+    }
+  });
+
+  // 🧠 Sort results (highest-rated first)
+  results.sort((a, b) => {
+    const avgA = a.userRatings
+      ? Object.values(a.userRatings).reduce((p, c) => p + c, 0) / Object.values(a.userRatings).length
+      : 0;
+    const avgB = b.userRatings
+      ? Object.values(b.userRatings).reduce((p, c) => p + c, 0) / Object.values(b.userRatings).length
+      : 0;
+    return avgB - avgA;
+  });
+
+  // 🔹 Show results instantly
+  if (results.length === 0) {
+    postsDiv.innerHTML = "<p style='text-align:center;color:gray;'>No matching results found.</p>";
+    return;
+  }
+
+  for (const p of results) {
+    await renderPost(p.id, p);
+  }
+};
+
+
+
+
+
+  </script>
+</body>
+</html>
