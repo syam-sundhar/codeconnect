@@ -1,0 +1,246 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #f3f6fa;
+  color: #333;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#sidebar {
+  width: 220px;
+  background: #1f2937;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.user-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  font-size: 18px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.unit {
+  padding: 10px;
+  margin: 5px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #4b5563;
+}
+
+.unit.active {
+  background: #10b981;
+}
+
+#addUnitBtn {
+  background: #3b82f6;
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: auto;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  overflow-y: hidden;
+}
+
+#unitTitle {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+#posts {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.post-card {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.code-block {
+  position: relative;
+}
+
+pre {
+  background: #f1f5f9;
+  padding: 10px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: 0.2s;
+}
+
+.copy-btn:hover {
+  opacity: 1;
+  background: #059669;
+}
+
+.rating span {
+  font-size: 20px;
+  cursor: pointer;
+  color: gray;
+  transition: color 0.2s;
+}
+
+.rating span:hover {
+  color: #ffd700;
+}
+
+.rating .filled {
+  color: gold;
+}
+
+.comments-section {
+  margin-top: 10px;
+}
+
+.comments-toggle {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.comments-list {
+  margin-top: 10px;
+  display: none;
+}
+
+.comments-list.visible {
+  display: block;
+}
+
+.comment {
+  background: #f9fafb;
+  padding: 5px 10px;
+  border-radius: 6px;
+  margin-top: 5px;
+}
+
+.comment-input-section {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.comment-input-section input {
+  flex: 1;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.comment-input-section button {
+  padding: 5px 10px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#postInput {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: #f9fafb;
+  border-radius: 10px;
+}
+
+#question, #code {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#postBtn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#searchBar {
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+#searchInput {
+  flex: 1;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#logoutBtn, #loginBtn {
+  margin-top: 5px;
+  padding: 6px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+  #sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  .unit {
+    flex-shrink: 0;
+  }
+}
