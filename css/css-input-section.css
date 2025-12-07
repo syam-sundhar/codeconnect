@@ -1,0 +1,68 @@
+/* Input Section (Question, Code, Post Button) */
+
+#postInput {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: stretch;
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+#question, #code {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  height: 45px;
+  transition: all 0.3s ease;
+}
+
+#question::placeholder, #code::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#question:focus, #code:focus {
+  outline: none;
+  border-color: rgba(102, 126, 234, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+}
+
+#code {
+  font-family: 'Courier New', monospace;
+}
+
+#postBtn {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8));
+  color: white;
+  border: none;
+  padding: 0 30px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  height: 45px;
+  white-space: nowrap;
+}
+
+#postBtn:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(5, 150, 105, 1));
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+}

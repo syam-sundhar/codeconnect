@@ -4,14 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title> CodeConnect - Student Coding Q&A Hub</title>
+  
   <!-- Favicon - Add your favicon file here -->
-  <link rel="icon" type="image/png" sizes="32x32" href="logo_32.jpg">
-  <link rel="icon" type="image/png" sizes="16x16" href="logo_16.jpg">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css">
+  
+  <link rel="stylesheet" href="codeconnect-css.css">
 </head>
-
 <body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loader-container">
+      <div class="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-ring"></div>
+        <div class="loader-ring"></div>
+        <div class="loader-text">CodeConnect</div>
+      </div>
+      <p class="loading-text">Loading your workspace...</p>
+    </div>
+  </div>
+
+  
+  
+
   <div id="sidebar">
     <div id="userInfo"></div>
     <button id="loginBtn">🔒 Login with Google</button>
@@ -28,12 +45,14 @@
     </div>
     <div id="posts"></div>
     <div id="postInput">
-      <textarea id="question" placeholder="Enter your question"></textarea>
-      <textarea id="code" placeholder="Enter your code here"></textarea>
+      <div class="input-group">
+        <textarea id="question" placeholder="Enter your question"></textarea>
+        <textarea id="code" placeholder="Enter your code here"></textarea>
+      </div>
       <button id="postBtn">Post</button>
     </div>
   </div>
 
-  <script type="module" src="script.js"></script>
+  <script type="module" src="codeconnect-js.js"></script>
 </body>
 </html>

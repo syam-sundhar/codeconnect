@@ -1,0 +1,24 @@
+/* Base Styles and Global Settings */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(-45deg, #0a0e27, #1a1f3a, #2d1b3d, #1e2a47);
+  background-size: 400% 400%;
+  animation: gradientMove 15s ease infinite;
+  display: flex;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

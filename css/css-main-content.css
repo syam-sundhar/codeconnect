@@ -1,0 +1,75 @@
+/* Main Content Area Styles - FIXED */
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 15px 20px; /* Reduced top/bottom padding */
+  overflow-y: hidden;
+  position: relative;
+}
+
+#unitTitle {
+  font-size: 20px; /* Reduced from 28px */
+  margin-bottom: 10px; /* Reduced from 15px */
+  color: white;
+  font-weight: 600; /* Reduced from 700 */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+/* Search Bar */
+#searchBar {
+  margin-bottom: 12px; /* Reduced from 15px */
+  display: flex;
+  gap: 10px;
+}
+
+#searchInput {
+  flex: 1;
+  padding: 10px 16px; /* Reduced from 12px 20px */
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  backdrop-filter: blur(10px);
+  color: white;
+  font-size: 14px;
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.2),
+              inset 0 0 20px rgba(102, 126, 234, 0.05);
+  animation: liquidGlow 3s ease-in-out infinite;
+}
+
+#searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+#searchInput:focus {
+  outline: none;
+  border-color: rgba(102, 126, 234, 0.5);
+  box-shadow: 0 0 30px rgba(102, 126, 234, 0.4);
+}
+
+/* Posts Container */
+#posts {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+#posts::-webkit-scrollbar {
+  width: 8px;
+}
+
+#posts::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+#posts::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 10px;
+}
+
+#posts::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}

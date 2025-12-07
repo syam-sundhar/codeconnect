@@ -1,0 +1,40 @@
+/* Responsive Design for Mobile and Tablets */
+
+@media (max-width: 768px) {
+  body {
+    flex-direction: column;
+  }
+  
+  #sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .unit {
+    flex-shrink: 0;
+  }
+  
+  .post-card {
+    max-width: 100%;
+  }
+  
+  #postInput {
+    flex-direction: column;
+  }
+  
+  .input-group {
+    flex-direction: column;
+  }
+  
+  #postBtn {
+    width: 100%;
+  }
+  
+  #sidebar-toggle {
+    display: none;
+  }
+}

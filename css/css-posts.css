@@ -1,0 +1,264 @@
+/* Post Cards and Related Styles */
+
+.post-card {
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  max-width: 65%;
+}
+
+.post-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Question only - Left aligned, Red */
+.post-card.question-only {
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid rgba(239, 68, 68, 0.6);
+  margin-right: auto;
+}
+
+/* Question with code - Right aligned, Green */
+.post-card.with-code {
+  background: rgba(16, 185, 129, 0.15);
+  border-left: 4px solid rgba(16, 185, 129, 0.6);
+  margin-left: auto;
+}
+
+/* Post Menu (Three Dots) */
+.post-menu {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+.post-menu-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 5px 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.post-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.post-menu-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 35px;
+  background: rgba(20, 20, 40, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  min-width: 140px;
+  overflow: hidden;
+}
+
+.post-menu-dropdown.show {
+  display: block;
+}
+
+.post-menu-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+}
+
+.post-menu-item:hover {
+  background: rgba(102, 126, 234, 0.3);
+  color: white;
+}
+
+.post-menu-item.delete {
+  color: #ef4444;
+}
+
+.post-menu-item.delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Post Content */
+.post-card h3 {
+  color: white;
+  margin-bottom: 12px;
+  font-size: 18px;
+  padding-right: 30px;
+}
+
+.code-block {
+  position: relative;
+  margin-top: 15px;
+}
+
+pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 10px;
+  overflow-x: auto;
+  color: #a5d6ff;
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(16, 185, 129, 0.8);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+  background: rgba(16, 185, 129, 1);
+  transform: scale(1.05);
+}
+
+.post-card > div:first-of-type small {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+/* Rating System */
+.rating {
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rating span {
+  font-size: 20px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+  filter: grayscale(100%);
+}
+
+.rating span:hover {
+  filter: grayscale(0%);
+  transform: scale(1.2);
+}
+
+.rating .filled {
+  color: #fbbf24;
+  filter: grayscale(0%);
+}
+
+.rating small {
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 5px;
+}
+
+/* Comments Section */
+.comments-section {
+  margin-top: 15px;
+}
+
+.comments-toggle {
+  background: rgba(59, 130, 246, 0.6);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.comments-toggle:hover {
+  background: rgba(59, 130, 246, 0.8);
+  transform: translateY(-2px);
+}
+
+.comments-list {
+  margin-top: 12px;
+  display: none;
+}
+
+.comments-list.visible {
+  display: block;
+}
+
+.comment {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  border-left: 2px solid rgba(102, 126, 234, 0.5);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}
+
+.comment b {
+  color: white;
+  margin-right: 5px;
+}
+
+.comment-input-section {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.comment-input-section input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 13px;
+}
+
+.comment-input-section input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.comment-input-section input:focus {
+  outline: none;
+  border-color: rgba(102, 126, 234, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.comment-input-section button {
+  padding: 8px 15px;
+  background: rgba(16, 185, 129, 0.6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.comment-input-section button:hover {
+  background: rgba(16, 185, 129, 0.8);
+}
