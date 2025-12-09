@@ -59,7 +59,7 @@ const db = initializeFirestore(app, {
 function checkAdminStatus(email) {
   const adminEmails = [
     "syamsksanand@gmail.com",
-    "localtemples25@gmail.com"
+    "localtemples25@gmail.com",
     "reddynakodara@gmail.com"
   ];
   return adminEmails.includes(email);
