@@ -1,3 +1,165 @@
+// codeconnect-js.js (Add this at the very beginning of your existing script.js file)
+
+// Group Selection Handler - Add this before any other code
+let selectedGroupId = null;
+
+// Check for selected group on page load
+function checkGroupSelection() {
+  selectedGroupId = localStorage.getItem('selectedGroupId');
+  
+  if (!selectedGroupId) {
+    // No group selected, redirect to home page
+    alert("Please select a group first");
+    window.location.href = 'index.html';
+    return false;
+  }
+  
+  // Display group indicator
+  displayGroupIndicator();
+  return true;
+}
+
+
+// Display group name at top
+async function displayGroupIndicator() {
+  if (!selectedGroupId) return;
+  
+  try {
+    const groupDoc = await getDoc(doc(db, "groups", selectedGroupId));
+    if (groupDoc.exists()) {
+      const groupData = groupDoc.data();
+      
+      // Add group indicator to page
+      const groupIndicator = document.createElement('div');
+      groupIndicator.id = 'group-indicator';
+      groupIndicator.style.cssText = `
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      `;
+      groupIndicator.innerHTML = `
+        <span style="font-weight: 600; color: white;">${groupData.name}</span>
+        <button onclick="leaveGroup()" style="
+          background: rgba(239, 68, 68, 0.8);
+          border: none;
+          color: white;
+          padding: 5px 12px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 600;
+        ">← Back to Groups</button>
+      `;
+      document.body.appendChild(groupIndicator);
+    }
+  } catch (error) {
+    console.error("Error loading group info:", error);
+  }
+}
+
+// Leave group and go back to home
+window.leaveGroup = function() {
+  localStorage.removeItem('selectedGroupId');
+  localStorage.removeItem('currentUnit');
+  window.location.href = 'index.html';
+};
+
+// Modify the Firebase query to include groupId filter
+// This function should be called after your Firebase initialization
+function modifyPostsQuery(originalQuery) {
+  if (!selectedGroupId) return originalQuery;
+  
+  // Add groupId filter to all queries
+  // The modified queries will look like:
+  // query(collection(db, "posts"), 
+  //   where("groupId", "==", selectedGroupId),
+  //   where("unitId", "==", currentUnit.id),
+  //   ...other conditions
+  // )
+  return originalQuery;
+}
+
+// Override the post creation to include groupId
+const originalAddDoc = window.addDoc || addDoc;
+function addDocWithGroup(collectionRef, data) {
+  if (collectionRef.path.includes('posts')) {
+    data.groupId = selectedGroupId;
+  }
+  return originalAddDoc(collectionRef, data);
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkGroupSelection);
+} else {
+  checkGroupSelection();
+}
+
+/* 
+ * INTEGRATION INSTRUCTIONS:
+ * 
+ * 1. In your existing script.js (or codeconnect-js.js), add this code at the TOP
+ * 
+ * 2. Modify your listenPosts() function to include the group filter:
+ * 
+ *    function listenPosts() {
+ *      if (!currentUnit || !selectedGroupId) return;
+ *      
+ *      let q;
+ *      if (currentUnit.isMentor && currentUnit.subtopicId) {
+ *        q = query(
+ *          collection(db, "posts"),
+ *          where("groupId", "==", selectedGroupId),  // ADD THIS LINE
+ *          where("unitId", "==", currentUnit.id),
+ *          where("subtopicId", "==", currentUnit.subtopicId),
+ *          orderBy("ts", "asc")
+ *        );
+ *      } else {
+ *        q = query(
+ *          collection(db, "posts"),
+ *          where("groupId", "==", selectedGroupId),  // ADD THIS LINE
+ *          where("unitId", "==", currentUnit.id),
+ *          orderBy("ts", "asc")
+ *        );
+ *      }
+ *      // ... rest of your code
+ *    }
+ * 
+ * 3. Modify your postBtn.onclick to include groupId:
+ * 
+ *    postBtn.onclick = async () => {
+ *      // ... existing validation code
+ *      
+ *      const newPost = {
+ *        question: q,
+ *        code: c,
+ *        userName: currentUser.displayName,
+ *        userEmail: currentUser.email,
+ *        groupId: selectedGroupId,  // ADD THIS LINE
+ *        unitId: currentUnit.id,
+ *        ts: Date.now(),
+ *        // ... rest of fields
+ *      };
+ *      
+ *      // ... rest of code
+ *    }
+ * 
+ * 4. Create a Firestore composite index for queries:
+ *    - Collection: posts
+ *    - Fields: groupId (Ascending), unitId (Ascending), ts (Ascending)
+ *    - Fields: groupId (Ascending), unitId (Ascending), subtopicId (Ascending), ts (Ascending)
+ */
 const renderedPosts = new Set();
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -59,8 +221,7 @@ const db = initializeFirestore(app, {
 function checkAdminStatus(email) {
   const adminEmails = [
     "syamsksanand@gmail.com",
-    "localtemples25@gmail.com",
-    "reddynakodara@gmail.com"
+    "localtemples25@gmail.com"
   ];
   return adminEmails.includes(email);
 }
@@ -172,57 +333,94 @@ onAuthStateChanged(auth, (user) => {
 
 // Load Units
 async function loadUnits() {
-  const snap = await getDocs(collection(db, "units"));
+  if (!selectedGroupId) {
+    console.error("No group selected when loading units");
+    return;
+  }
+
+  const snap = await getDocs(
+    collection(db, "groups", selectedGroupId, "units")
+  );
+
   unitsDiv.innerHTML = "";
-  
-  for (const docu of snap.docs) {
-    const u = docu.data();
+
+  function getUnitPriority(name) {
+    const n = (name || "").toLowerCase();
+
+    if (n.includes("mentor")) return 1;
+    if (n.includes("queries")) return 2;
+    if (n.includes("code check")) return 3;
+    if (n.includes("discussion form") || n.includes("discussion")) return 4;
+
+    return 100;
+  }
+
+  const units = snap.docs.map(docu => {
+    const data = docu.data();
+    return {
+      id: docu.id,
+      name: data.name,
+      raw: data,
+      priority: getUnitPriority(data.name)
+    };
+  });
+
+  units.sort((a, b) => {
+    if (a.priority === b.priority) {
+      return (a.name || "").localeCompare(b.name || "");
+    }
+    return a.priority - b.priority;
+  });
+
+  for (const uObj of units) {
+    const docId = uObj.id;
+    const u = uObj.raw;
     const unitDiv = document.createElement("div");
-    
-    const isMentor = u.name.toLowerCase().includes("mentor");
-    
+
+    const isMentor = (u.name || "").toLowerCase().includes("mentor");
+
     if (isMentor) {
       unitDiv.className = "unit has-subtopics";
       unitDiv.innerHTML = `
         ${u.name}
         <span class="dropdown-icon">▼</span>
       `;
-      
+
       const subtopicsDiv = document.createElement("div");
       subtopicsDiv.className = "subtopics";
-      subtopicsDiv.id = `subtopics-${docu.id}`;
-      
-      const subtopicsSnap = await getDocs(collection(db, "units", docu.id, "subtopics"));
+      subtopicsDiv.id = `subtopics-${docId}`;
+
+      const subtopicsSnap = await getDocs(
+        collection(db, "groups", selectedGroupId, "units", docId, "subtopics")
+      );
+
       subtopicsSnap.forEach(subDoc => {
         const subData = subDoc.data();
         const subDiv = document.createElement("div");
         subDiv.className = "subtopic";
-        
+
         const isAdmin = currentUser && checkAdminStatus(currentUser.email);
-        
+
         const nameSpan = document.createElement("span");
         nameSpan.className = "subtopic-name";
         nameSpan.textContent = subData.name;
-        
-        // FIXED: Better event handling to prevent dropdown closing
+
         nameSpan.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
-          selectSubtopic(docu.id, u.name, subDoc.id, subData.name, subDiv);
+          selectSubtopic(docId, u.name, subDoc.id, subData.name, subDiv);
         });
-        
-        // Also handle clicks on the entire subtopic div
+
         subDiv.addEventListener('click', (e) => {
-          // Only handle if clicking the subtopic itself, not buttons
           if (e.target === subDiv || e.target === nameSpan) {
             e.stopPropagation();
             e.preventDefault();
-            selectSubtopic(docu.id, u.name, subDoc.id, subData.name, subDiv);
+            selectSubtopic(docId, u.name, subDoc.id, subData.name, subDiv);
           }
         });
-        
+
         subDiv.appendChild(nameSpan);
-        
+
         if (isAdmin) {
           const menuBtn = document.createElement("button");
           menuBtn.className = "subtopic-menu-btn";
@@ -230,30 +428,30 @@ async function loadUnits() {
           menuBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             e.preventDefault();
-            toggleSubtopicMenu(docu.id, subDoc.id);
+            toggleSubtopicMenu(docId, subDoc.id);
           });
-          
+
           const menuDropdown = document.createElement("div");
           menuDropdown.className = "subtopic-menu-dropdown";
-          menuDropdown.id = `subtopic-menu-${docu.id}-${subDoc.id}`;
-          
+          menuDropdown.id = `subtopic-menu-${docId}-${subDoc.id}`;
+
           const editBtn = document.createElement("button");
           editBtn.className = "subtopic-menu-item";
           editBtn.textContent = "✏️ Edit Name";
           editBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             e.preventDefault();
-            editSubtopic(docu.id, subDoc.id, subData.name);
+            editSubtopic(docId, subDoc.id, subData.name);
           });
-          
+
           menuDropdown.appendChild(editBtn);
           subDiv.appendChild(menuBtn);
           subDiv.appendChild(menuDropdown);
         }
-        
+
         subtopicsDiv.appendChild(subDiv);
       });
-      
+
       if (currentUser && checkAdminStatus(currentUser.email)) {
         const addTopicBtn = document.createElement("button");
         addTopicBtn.className = "add-topic-btn";
@@ -261,34 +459,30 @@ async function loadUnits() {
         addTopicBtn.addEventListener('click', (e) => {
           e.stopPropagation();
           e.preventDefault();
-          addSubtopic(docu.id);
+          addSubtopic(docId);
         });
         subtopicsDiv.appendChild(addTopicBtn);
       }
-      
+
       unitDiv.appendChild(subtopicsDiv);
-      
-      // FIXED: Only toggle when clicking the unit header itself, not children
+
       unitDiv.addEventListener('click', (event) => {
-        // Check if click is on subtopics container or its children
-        if (event.target.closest('.subtopics')) {
-          return; // Don't toggle if clicking inside subtopics area
-        }
-        // Only toggle if clicking the unit div or dropdown icon
+        if (event.target.closest('.subtopics')) return;
         if (event.target === unitDiv || event.target.classList.contains('dropdown-icon')) {
-          toggleSubtopics(docu.id);
+          toggleSubtopics(docId);
         }
       });
     } else {
       unitDiv.className = "unit";
       unitDiv.textContent = u.name;
-      unitDiv.addEventListener('click', (event) => selectUnit(docu.id, u.name, event));
+      unitDiv.addEventListener('click', (event) =>
+        selectUnit(docId, u.name, event)
+      );
     }
-    
+
     unitsDiv.appendChild(unitDiv);
   }
 }
-
 // Toggle subtopics dropdown
 function toggleSubtopics(unitId) {
   const subtopicsDiv = document.getElementById(`subtopics-${unitId}`);
@@ -316,17 +510,23 @@ window.toggleSubtopicMenu = function(unitId, subtopicId) {
 // Edit subtopic name (admin only)
 window.editSubtopic = async function(unitId, subtopicId, currentName) {
   if (!currentUser) return alert("Login first");
-  
+
   const isAdmin = checkAdminStatus(currentUser.email);
   if (!isAdmin) return alert("Only admins can edit topics");
-  
+
   const newName = prompt("Enter new topic name:", currentName);
   if (!newName || newName.trim() === "" || newName.trim() === currentName) return;
-  
+
+  if (!selectedGroupId) {
+    alert("No group selected");
+    return;
+  }
+
   try {
-    await updateDoc(doc(db, "units", unitId, "subtopics", subtopicId), {
-      name: newName.trim()
-    });
+    await updateDoc(
+      doc(db, "groups", selectedGroupId, "units", unitId, "subtopics", subtopicId),
+      { name: newName.trim() }
+    );
     alert("Topic name updated successfully!");
     loadUnits();
   } catch (error) {
@@ -335,21 +535,30 @@ window.editSubtopic = async function(unitId, subtopicId, currentName) {
   }
 };
 
+
 // Add subtopic (admin only)
 async function addSubtopic(unitId) {
   if (!currentUser) return alert("Login first");
-  
+
   const isAdmin = checkAdminStatus(currentUser.email);
   if (!isAdmin) return alert("Only admins can add topics");
-  
+
+  if (!selectedGroupId) {
+    alert("No group selected");
+    return;
+  }
+
   const name = prompt("Enter new topic name:");
   if (!name || name.trim() === "") return;
-  
+
   try {
-    await addDoc(collection(db, "units", unitId, "subtopics"), { 
-      name: name.trim(),
-      createdAt: Date.now()
-    });
+    await addDoc(
+      collection(db, "groups", selectedGroupId, "units", unitId, "subtopics"),
+      {
+        name: name.trim(),
+        createdAt: Date.now()
+      }
+    );
     alert("Topic added successfully!");
     loadUnits();
   } catch (error) {
@@ -357,6 +566,7 @@ async function addSubtopic(unitId) {
     console.error("Error adding topic:", error);
   }
 }
+
 
 // Restore unit selection after page reload
 async function restoreUnitSelection(savedUnit) {
@@ -708,7 +918,12 @@ function listenPosts() {
     return;
   }
 
-  console.log("Loading posts for:", currentUnit);
+  if (!selectedGroupId) {
+    console.log("No group selected");
+    return;
+  }
+
+  console.log("Loading posts for:", currentUnit, "group:", selectedGroupId);
   postsDiv.innerHTML = "";
   renderedPosts.clear();
 
@@ -718,6 +933,7 @@ function listenPosts() {
     console.log("Querying mentor subtopic posts");
     q = query(
       collection(db, "posts"),
+      where("groupId", "==", selectedGroupId),
       where("unitId", "==", currentUnit.id),
       where("subtopicId", "==", currentUnit.subtopicId),
       orderBy("ts", "asc")
@@ -726,6 +942,7 @@ function listenPosts() {
     console.log("Querying regular unit posts");
     q = query(
       collection(db, "posts"),
+      where("groupId", "==", selectedGroupId),
       where("unitId", "==", currentUnit.id),
       orderBy("ts", "asc")
     );
@@ -734,11 +951,10 @@ function listenPosts() {
   onSnapshot(q, (snapshot) => {
     console.log(`Received ${snapshot.docs.length} posts from database`);
     
-    // On initial load, render all existing posts
     if (snapshot.docs.length > 0 && renderedPosts.size === 0) {
-      snapshot.docs.forEach((doc) => {
-        const docData = doc.data();
-        const docId = doc.id;
+      snapshot.docs.forEach((docu) => {
+        const docData = docu.data();
+        const docId = docu.id;
         
         if (!docData.isTemp && !docData.deleted) {
           renderPost(docId, docData);
@@ -746,7 +962,6 @@ function listenPosts() {
       });
       postsDiv.scrollTop = postsDiv.scrollHeight;
     } else {
-      // For real-time updates
       snapshot.docChanges().forEach((change) => {
         const docData = change.doc.data();
         const docId = change.doc.id;
@@ -756,7 +971,10 @@ function listenPosts() {
         if (change.type === "added") {
           renderPost(docId, docData);
           postsDiv.scrollTop = postsDiv.scrollHeight;
-        } else if (change.type === "removed" || (change.type === "modified" && docData.deleted)) {
+        } else if (
+          change.type === "removed" || 
+          (change.type === "modified" && docData.deleted)
+        ) {
           const postCard = document.getElementById(`post-${docId}`);
           if (postCard) {
             postCard.remove();
@@ -771,6 +989,7 @@ function listenPosts() {
   });
 }
 
+
 // Add Unit
 addUnitBtn.onclick = async () => {
   if (!currentUser) return alert("Login first");
@@ -778,11 +997,17 @@ addUnitBtn.onclick = async () => {
   const isAdmin = checkAdminStatus(currentUser.email);
   if (!isAdmin) return alert("Only admins can add units");
 
+  if (!selectedGroupId) {
+    alert("No group selected");
+    return;
+  }
   const name = prompt("Enter new unit name:");
   if (!name || name.trim() === "") return;
-
   try {
-    await addDoc(collection(db, "units"), { name: name.trim() });
+    await addDoc(
+      collection(db, "groups", selectedGroupId, "units"),
+      { name: name.trim() }
+    );
     alert("Unit added successfully!");
     loadUnits();
   } catch (error) {
@@ -791,10 +1016,12 @@ addUnitBtn.onclick = async () => {
   }
 };
 
+
 // Post Question
 postBtn.onclick = async () => {
   if (!currentUser) return alert("Login first");
   if (!currentUnit) return alert("Select a unit first");
+  if (!selectedGroupId) return alert("Select a group first");
 
   const q = qField.value.trim();
   const c = cField.value.trim();
@@ -812,6 +1039,7 @@ postBtn.onclick = async () => {
     code: c,
     userName: currentUser.displayName,
     userEmail: currentUser.email,
+    groupId: selectedGroupId,
     unitId: currentUnit.id,
     ts: Date.now(),
     comments: [],
@@ -841,6 +1069,7 @@ postBtn.onclick = async () => {
   cField.value = "";
 };
 
+
 // Search
 let isSearching = false;
 
@@ -849,6 +1078,11 @@ searchInput.oninput = async () => {
 
   if (!currentUnit) {
     alert("Select a unit first");
+    return;
+  }
+
+  if (!selectedGroupId) {
+    alert("Select a group first");
     return;
   }
 
@@ -869,6 +1103,7 @@ searchInput.oninput = async () => {
   if (currentUnit.isMentor && currentUnit.subtopicId) {
     q = query(
       collection(db, "posts"),
+      where("groupId", "==", selectedGroupId),
       where("unitId", "==", currentUnit.id),
       where("subtopicId", "==", currentUnit.subtopicId),
       orderBy("ts", "asc")
@@ -876,6 +1111,7 @@ searchInput.oninput = async () => {
   } else {
     q = query(
       collection(db, "posts"),
+      where("groupId", "==", selectedGroupId),
       where("unitId", "==", currentUnit.id),
       orderBy("ts", "asc")
     );

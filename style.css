@@ -133,6 +133,31 @@ body {
   50% { opacity: 1; }
 }
 
+
+#mainHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    margin-bottom: 10px;
+}
+
+.ai-btn {
+    padding: 10px 18px;
+    background: #e1a83e;
+    color: white;
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.ai-btn:hover {
+    background: #bf861e;
+    transform: scale(1.03);
+}
+
+
 /* ========================================
    SIDEBAR
 ======================================== */

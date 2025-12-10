@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title> CodeConnect - Student Coding Q&A Hub</title>
+  
+  <!-- Favicon - Add your favicon file here -->
+  <link rel="icon" type="image/png" sizes="32x32" href="logo_32.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="logo_16.jpg">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loader-container">
+      <div class="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-ring"></div>
+        <div class="loader-ring"></div>
+        <div class="loader-text">Code Connect</div>
+      </div>
+      <p class="loading-text">Loading your workspace...</p>
+    </div>
+  </div>
+
+  
+  
+
+  <div id="sidebar">
+    <div id="userInfo"></div>
+    <button id="loginBtn">🔒 Login with Google</button>
+    <button id="logoutBtn" style="display:none;">🚪 Logout</button>
+    <h3>Forms</h3>
+    <div id="units"></div>
+    <button id="addUnitBtn">+ Add Unit</button>
+  </div>
+
+  <div id="main">
+    <div id="mainHeader">
+  <div id="unitTitle">Select a Unit</div>
+  <a href="https://echolearn-core-ai.vercel.app/" id="aiAssistantBtn" class="ai-btn" target="_blank">Study with AI Assistant</a>
+    </div>
+
+    <div id="searchBar">
+      <input type="text" id="searchInput" placeholder="🔍 Search questions..." />
+    </div>
+    <div id="posts"></div>
+    <div id="postInput">
+      <div class="input-group">
+        <textarea id="question" placeholder="Enter your question"></textarea>
+        <textarea id="code" placeholder="Enter your code here"></textarea>
+      </div>
+      <button id="postBtn">Post</button>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
